@@ -9,13 +9,23 @@ function participantValidation(user){
     const validation = participantSchema.validate(user);
     if(validation.error){
         return false
-    } return true
+    };  return true
 }
 
 //Messages validation
 
-
+function messagesValidation(message){
+    const messageSchema = joi.object({
+        to: joi.string().required(),
+        text: joi.string().required(),
+        type: joi.string.valid('message', 'private_message').required()
+    });
+    const validation = messageSchema.validate(message);
+    if(validation.error){
+        return false
+    };  return true
+}
 //Status validation
 
 
-export { participantValidation }
+export { participantValidation, messagesValidation }

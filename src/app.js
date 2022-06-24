@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 dotenv.config();
 
 import {MongoClient} from 'mongodb';
-import { participantValidation } from './components/JoiVerifications.js'
+import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
 import { participants, isUsernameAvailible } from './components/participants.js'
 
 let db = null;
@@ -39,15 +39,19 @@ server.post("/participants", async (req, res) => {
     res.sendStatus(201);
 });
 server.get("/participants", (req, res) => {
-    db.collection('mensagem').find().toArray().then(mensagem => {
-        res.send(mensagem)
+    db.collection('participante').find().toArray().then(participants => {
+        res.send(participants)
     })
 });
 
 /* Messages Routes */
 
 server.post("/messages", (req, res) => {
-
+    const message = req.body;
+    if(messagesValidation(message)){return res.sendStatus(422);};
+    message.time = dayjs().format('HH:mm:ss')
+    db.collection('mensagens').insertOne(message);
+    res.sendStatus(201);
 });
 server.get("/messages", (req, res) => {
 
