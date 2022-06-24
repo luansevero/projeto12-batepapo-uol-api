@@ -68,16 +68,35 @@ server.get("/messages", async (req, res) => {
     try {
     const limit = parseInt(req.query.limit);
     const user = req.headers.user;
-    let allMessages = await db.collection('mesangens').find({}).toArray();
+    let allMessages = await db.collection('mensagens').find({}).toArray();
     if(limit){
        allMessages = messageLimit(allMessages, limit, user);
     };
     res.send(allMessages)
-    mongoClient.close()
     } catch(error){
         res.sendStatus(500)
-        mongoClient()
     };
+});
+server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
+    try{
+        const { user }  = req.headers;
+        const { ID_DA_MENSAGEM } = req.params;
+        const messageCollection = db.collection('mensagens')
+        const message = messageCollection.findOne({ _id: new Object(ID_DA_MENSAGEM)});
+        if(!message){
+            return res.sendStatus(404);
+        };
+        if(message.name !== user){
+            return res.sendStatus(401);
+        }
+        await messageCollection.deleteOne({ _id: new Object(ID_DA_MENSAGEM)});
+        res.sendStatus(200)
+    } catch (error){
+        res.sendStatus(500);
+    }
+});
+server.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
+
 });
 
 /* Status Routes */
