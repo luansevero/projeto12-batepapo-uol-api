@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import {MongoClient} from 'mongodb';
+import { participantValidation } from './components/JoiVerifications.js'
 
 let db = null;
 const mongoClient = new MongoClient(process.env.MONGO_URI);
@@ -18,7 +19,12 @@ server.use(json());
 /* Participants Routes */
 
 server.post("/participants", (req, res) => {
-
+    const user = req.body;
+    if(!participantValidation(user)){
+        return res.sendStatus(422);
+        
+    }
+    console.log('Funcionou');
 });
 server.get("/participants", (req, res) => {
 

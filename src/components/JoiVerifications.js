@@ -2,9 +2,15 @@ import joi from "joi";
 
 //Participants validation
 
-const participantSchema = joi.object({
-    name: joi.string().required()
-});
+function participantValidation(user){
+    const participantSchema = joi.object({
+        name: joi.string().required()
+    });
+    const validation = participantSchema.validate(user);
+    if(validation.error){
+        return false
+    } return true
+}
 
 //Messages validation
 
@@ -12,3 +18,4 @@ const participantSchema = joi.object({
 //Status validation
 
 
+export { participantValidation }
