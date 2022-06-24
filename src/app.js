@@ -39,7 +39,9 @@ server.post("/participants", async (req, res) => {
     res.sendStatus(201);
 });
 server.get("/participants", (req, res) => {
-
+    db.collection('mensagem').find().toArray().then(mensagem => {
+        res.send(mensagem)
+    })
 });
 
 /* Messages Routes */
