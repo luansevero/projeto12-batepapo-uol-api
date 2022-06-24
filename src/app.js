@@ -5,6 +5,7 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation } from './components/JoiVerifications.js'
+import { participants, isUsernameAvailible } from './components/participants.js'
 
 let db = null;
 const mongoClient = new MongoClient(process.env.MONGO_URI);
@@ -20,11 +21,8 @@ server.use(json());
 
 server.post("/participants", (req, res) => {
     const user = req.body;
-    if(!participantValidation(user)){
-        return res.sendStatus(422);
-        
-    }
-    console.log('Funcionou');
+    if(!participantValidation(user)){return res.sendStatus(422);};
+    if(isUsernameAvailible(user)){return res.sendStatus(409);};
 });
 server.get("/participants", (req, res) => {
 
