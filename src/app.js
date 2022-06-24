@@ -7,7 +7,6 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
-import { isLoggedIn } from './components/participants.js'
 
 
 let db = null;
@@ -28,9 +27,9 @@ server.post("/participants", async (req, res) => {
         const user = req.body;
         const participantCollection = db.collection('participante');
 
-        const participants = await participantCollection.find({}).toArray();
+        const participant = await participantCollection.findOne({name: user});
 
-        if(!isLoggedIn(user, participants)){return res.sendStatus(409);};
+        if(participant){return res.sendStatus(409);};
 
         await participantCollection.insertOne({
             name: user,
@@ -44,7 +43,7 @@ server.post("/participants", async (req, res) => {
             type: 'status',
             time: dayjs().format('HH:mm:ss')
         })
-        
+
         res.sendStatus(201);
     } catch(error){
         res.send(500);
@@ -87,9 +86,23 @@ server.post("/status", async (req, res) => {
     
     try{
         const user = req.headers.user;
-        const allParticipants = await db.collection('participante').find({}).toArray();
-    } catch(error){
+        const participantCollection = db.collection('participante');
+        const participant = await participantCollection.findOne({ name: user});
 
+        if(!participant){
+            res.sendStatus(404)
+        } 
+
+        await participantCollection.updateOne(
+            {name: user},
+            {$set:{
+                name: user,
+                laststatus: DateNow()
+            }
+        })
+        res.sendStatus(200);
+    } catch(error){
+        res.sendStatus(500);
     }
 
 });
