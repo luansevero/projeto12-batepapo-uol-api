@@ -7,7 +7,8 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
-import { isUsernameAvailible } from './components/participants.js'
+import { isLoggedIn } from './components/participants.js'
+
 
 let db = null;
 const mongoClient = new MongoClient(process.env.MONGO_URI);
@@ -22,21 +23,32 @@ server.use(json());
 /* Participants Routes */
 
 server.post("/participants", async (req, res) => {
-    const user = req.body;
     if(!participantValidation(user)){return res.sendStatus(422);};
-    if(isUsernameAvailible(user)){return res.sendStatus(409);};
-    await db.collection('participante').insertOne({
-        name: user,
-        laststatus: DateNow()
-    });
-    await db.collection('mensagem').insertOne({
-        from: user,
-        to: 'Todos',
-        text: 'entra na sala...',
-        type: 'status',
-        time: dayjs().format('HH:mm:ss')
-    })
-    res.sendStatus(201);
+    try{
+        const user = req.body;
+        const participantCollection = db.collection('participante');
+
+        const participants = await participantCollection.find({}).toArray();
+
+        if(!isLoggedIn(user, participants)){return res.sendStatus(409);};
+
+        await participantCollection.insertOne({
+            name: user,
+            laststatus: DateNow()
+        });
+
+        await db.collection('mensagem').insertOne({
+            from: user,
+            to: 'Todos',
+            text: 'entra na sala...',
+            type: 'status',
+            time: dayjs().format('HH:mm:ss')
+        })
+        
+        res.sendStatus(201);
+    } catch(error){
+        res.send(500);
+    } 
 });
 server.get("/participants", (req, res) => {
     db.collection('participante').find().toArray().then(participants => {
@@ -53,11 +65,11 @@ server.post("/messages", (req, res) => {
     db.collection('mensagens').insertOne(message);
     res.sendStatus(201);
 });
-server.get("/messages", (req, res) => {
+server.get("/messages", async (req, res) => {
     try {
     const limit = parseInt(req.query.limit);
     const user = req.headers.user;
-    const allMessages = db.collection('mesangens').find({}).toArray();
+    let allMessages = await db.collection('mesangens').find({}).toArray();
     if(limit){
        allMessages = messageLimit(allMessages, limit, user);
     };
@@ -70,7 +82,15 @@ server.get("/messages", (req, res) => {
 });
 
 /* Status Routes */
-server.post("/status", (req, res) => {
+
+server.post("/status", async (req, res) => {
+    
+    try{
+        const user = req.headers.user;
+        const allParticipants = await db.collection('participante').find({}).toArray();
+    } catch(error){
+
+    }
 
 });
 

@@ -1,7 +1,5 @@
-function isUsernameAvailible(user){
-    if(participants.contains(user)){
-        return true
-    } return false
+function isLoggedIn(user, participants){
+    return participants.some(participant => participant.to == user)
 }
 
-export { isUsernameAvailible }
+export { isLoggedIn }
