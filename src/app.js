@@ -7,7 +7,7 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
-import { participants, isUsernameAvailible } from './components/participants.js'
+import { isUsernameAvailible } from './components/participants.js'
 
 let db = null;
 const mongoClient = new MongoClient(process.env.MONGO_URI);
@@ -54,7 +54,19 @@ server.post("/messages", (req, res) => {
     res.sendStatus(201);
 });
 server.get("/messages", (req, res) => {
-
+    try {
+    const limit = parseInt(req.query.limit);
+    const user = req.headers.user;
+    const allMessages = db.collection('mesangens').find({}).toArray();
+    if(limit){
+       allMessages = messageLimit(allMessages, limit, user);
+    };
+    res.send(allMessages)
+    mongoClient.close()
+    } catch(error){
+        res.sendStatus(500)
+        mongoClient()
+    };
 });
 
 /* Status Routes */
