@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import mongoClient from '../database/mongo.js';
-import { participantValidation } from '../components/JoiVerifications.js'
+import { participantValidation } from '../verification/JoiVerifications.js'
 
 
 async function login(req,res){
@@ -16,28 +16,35 @@ async function login(req,res){
     if(isLoggedIn){return res.sendStatus(409)};
     try{
         await participantCollection.insertOne(user);
-        await db.collection('mensagem').insertOne({
+        await db.collection('mensagens').insertOne({
             from: user.name,
             to: 'Todos',
             text: 'entra na sala...',
             type: 'status',
             time: dayjs().format('HH:mm:ss')
         })
-        return res.send(201);
+        return res.sendStatus(201);
     } catch (error){
-        return res.send(422);
+        return res.sendStatus(422);
+        
     } 
-}
+} // Testado e funcionando
 
 async function allOnlineUsers(req,res){
     await mongoClient.connect();
     const db = mongoClient.db('bate_papo_uol');
-
     const participantCollection = db.collection('participante');
-    const participants = participantCollection.find().toArray();
 
-    return res.send(participants)
+    try{
+        const participants =  await participantCollection.find().toArray();
+        return res.send(participants)
+    } catch(error){
+        return res.sendStatus(500);
+    }
+    
 }
+
+
 
 export { login, allOnlineUsers }
 

@@ -1,14 +1,14 @@
-import express, { application, json } from 'express';
+import express, { json } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import dayjs from 'dayjs'
 
 dotenv.config();
 
 import {MongoClient} from 'mongodb';
-import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
-import { login, allOnlineUsers }  from './api/participante.js'
-import { postMessage, allMessages, deleteMessage } from './api/mensagem.js'
+
+import { login, allOnlineUsers}  from './api/participante.js'
+import { postMessage, allMessages, deleteMessage, editMessage } from './api/mensagem.js'
+import { userStatus } from './api/status.js'
 
 
 let db = null;
@@ -29,55 +29,11 @@ server.get("/participants", (req, res) => allOnlineUsers(req,res));
 server.post("/messages", (req, res) => postMessage(req,res));
 server.get("/messages", async (req, res) => allMessages(req,res));
 server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => deleteMessage(req,res));
-server.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
-        const { user }  = req.headers;
-        const message = req.body;
-        if(messagesValidation(message)){return res.sendStatus(422);};
-        message.time = dayjs().format('HH:mm:ss')
-        db.collection('mensagens').insertOne(message);
-    try{
-        const { ID_DA_MENSAGEM } = req.params;
-        const messageCollection = db.collection('mensagens')
-        const message = messageCollection.findOne({ _id: new Object(ID_DA_MENSAGEM)});
-        if(!message){
-            return res.sendStatus(404);
-        };
-        if(message.name !== user){
-            return res.sendStatus(401);
-        }
-        await messageCollection.deleteOne({ _id: new Object(ID_DA_MENSAGEM)});
-        res.sendStatus(200)
-    } catch (error){
-        res.sendStatus(500);
-    }
-});
+server.put("/messages/:ID_DA_MENSAGEM", async (req, res) => editMessage(req,res));
 
 /* Status Routes */
 
-server.post("/status", async (req, res) => {
-    
-    try{
-        const user = req.headers.user;
-        const participantCollection = db.collection('participante');
-        const participant = await participantCollection.findOne({ name: user});
-
-        if(!participant){
-            res.sendStatus(404)
-        } 
-
-        await participantCollection.updateOne(
-            {name: user},
-            {$set:{
-                name: user,
-                laststatus: DateNow()
-            }
-        })
-        res.sendStatus(200);
-    } catch(error){
-        res.sendStatus(500);
-    }
-
-});
+server.post("/status", async (req, res) => userStatus(req,res));
 
 server.listen(5000, () => {
     console.log("Servidor online! PORT:5000")
