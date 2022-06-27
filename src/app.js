@@ -8,7 +8,7 @@ dotenv.config();
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
 import { login, allOnlineUsers }  from './api/participante.js'
-import { postMessage } from './api/mensagem.js'
+import { postMessage, allMessages } from './api/mensagem.js'
 
 
 let db = null;
@@ -22,26 +22,12 @@ server.use(cors());
 server.use(json());
 
 /* Participants Routes */
-
 server.post("/participants", async (req, res) => login(req,res));
 server.get("/participants", (req, res) => allOnlineUsers(req,res));
 
 /* Messages Routes */
-
 server.post("/messages", (req, res) => postMessage(req,res));
-server.get("/messages", async (req, res) => {
-    try {
-    const limit = parseInt(req.query.limit);
-    const user = req.headers.user;
-    let allMessages = await db.collection('mensagens').find({}).toArray();
-    if(limit){
-       allMessages = messageLimit(allMessages, limit, user);
-    };
-    res.send(allMessages)
-    } catch(error){
-        res.sendStatus(500)
-    };
-});
+server.get("/messages", async (req, res) => allMessages(req,res));
 server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     try{
         const { user }  = req.headers;
