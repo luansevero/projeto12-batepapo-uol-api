@@ -27,9 +27,6 @@ async function login(req,res){
     } catch (error){
         return res.send(422);
     } 
-
-
-
 }
 
 async function allOnlineUsers(req,res){

@@ -63,4 +63,25 @@ function messageLimit(messages, limit, user){
     return onlyUserMessages.slice(onlyUserMessages.length - limit, onlyUserMessages.length)
 }
 
-export { postMessage, allMessages }
+async function deleteMessage(req, res){
+    await mongoClient.connect();
+    const db = mongoClient.db('bate_papo_uol');
+    const messageCollection = db.collection('mensagens');
+
+    try{
+        const { user } = req.headers;
+        const { ID_DA_MENSAGEM } = req.params;
+        
+        const message = await messageCollection.findOne({ _id: ID_DA_MENSAGEM });
+
+        if(!message){return res.sendStatus(404)};
+        if(message.name !== user){return res.sendStatus(401)};
+
+        await messageCollection.deleteOne({ _id: ID_DA_MENSAGEM });
+
+    } catch(error){
+        res.sendStatus(500);
+    }
+}
+
+export { postMessage, allMessages, deleteMessage }

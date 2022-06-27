@@ -1,7 +1,6 @@
 import joi from "joi";
 
 //Participants validation
-
 function participantValidation(user){
     const participantSchema = joi.object({
         name: joi.string().min(1).trim().required(),
@@ -14,7 +13,6 @@ function participantValidation(user){
 }
 
 //Messages validation
-
 function messagesValidation(message){
     const messageSchema = joi.object({
         to: joi.string().required(),
@@ -28,7 +26,6 @@ function messagesValidation(message){
         return false
     };  return true
 }
-//Status validation
 
 
 export { participantValidation, messagesValidation }

@@ -8,7 +8,7 @@ dotenv.config();
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
 import { login, allOnlineUsers }  from './api/participante.js'
-import { postMessage, allMessages } from './api/mensagem.js'
+import { postMessage, allMessages, deleteMessage } from './api/mensagem.js'
 
 
 let db = null;
@@ -28,24 +28,7 @@ server.get("/participants", (req, res) => allOnlineUsers(req,res));
 /* Messages Routes */
 server.post("/messages", (req, res) => postMessage(req,res));
 server.get("/messages", async (req, res) => allMessages(req,res));
-server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
-    try{
-        const { user }  = req.headers;
-        const { ID_DA_MENSAGEM } = req.params;
-        const messageCollection = db.collection('mensagens')
-        const message = messageCollection.findOne({ _id: new Object(ID_DA_MENSAGEM)});
-        if(!message){
-            return res.sendStatus(404);
-        };
-        if(message.name !== user){
-            return res.sendStatus(401);
-        }
-        await messageCollection.deleteOne({ _id: new Object(ID_DA_MENSAGEM)});
-        res.sendStatus(200)
-    } catch (error){
-        res.sendStatus(500);
-    }
-});
+server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => deleteMessage(req,res));
 server.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
         const { user }  = req.headers;
         const message = req.body;
