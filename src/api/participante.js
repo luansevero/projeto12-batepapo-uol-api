@@ -8,13 +8,12 @@ async function login(req,res){
     if(!participantValidation(user)){return res.sendStatus(422)};
 
     await mongoClient.connect();
-    const db = mongoClient.db('uol');
+    const db = mongoClient.db('bate_papo_uol');
 
     const participantCollection = db.collection('participante');
     
     const isLoggedIn = await participantCollection.findOne({name: user});
     if(isLoggedIn){return res.sendStatus(409)};
-
     try{
         await participantCollection.insertOne(user);
         await db.collection('mensagem').insertOne({
@@ -29,14 +28,16 @@ async function login(req,res){
         return res.send(422);
     } 
 
+
+
 }
 
 async function allOnlineUsers(req,res){
     await mongoClient.connect();
-    const db = mongoClient.db('uol');
+    const db = mongoClient.db('bate_papo_uol');
 
     const participantCollection = db.collection('participante');
-    const participants = participantCollection.find().toArray()
+    const participants = participantCollection.find().toArray();
 
     return res.send(participants)
 }

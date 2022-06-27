@@ -19,7 +19,9 @@ function messagesValidation(message){
     const messageSchema = joi.object({
         to: joi.string().required(),
         text: joi.string().required(),
-        type: joi.string.valid('message', 'private_message').required()
+        type: joi.string.valid('message', 'private_message').required(),
+        from: joi.string.valid('true').required,
+        time: joi.string().min(1).trim().required()
     });
     const validation = messageSchema.validate(message);
     if(validation.error){

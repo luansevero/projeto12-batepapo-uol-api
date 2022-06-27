@@ -8,6 +8,7 @@ dotenv.config();
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
 import { login, allOnlineUsers }  from './api/participante.js'
+import { postMessage } from './api/mensagem.js'
 
 
 let db = null;
@@ -27,13 +28,7 @@ server.get("/participants", (req, res) => allOnlineUsers(req,res));
 
 /* Messages Routes */
 
-server.post("/messages", (req, res) => {
-    const message = req.body;
-    if(messagesValidation(message)){return res.sendStatus(422);};
-    message.time = dayjs().format('HH:mm:ss')
-    db.collection('mensagens').insertOne(message);
-    res.sendStatus(201);
-});
+server.post("/messages", (req, res) => postMessage(req,res));
 server.get("/messages", async (req, res) => {
     try {
     const limit = parseInt(req.query.limit);
