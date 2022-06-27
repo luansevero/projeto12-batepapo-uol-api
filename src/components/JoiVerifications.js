@@ -4,7 +4,7 @@ import joi from "joi";
 
 function participantValidation(user){
     const participantSchema = joi.object({
-        name: joi.string().required()
+        name: joi.string().trim().required()
     });
     const validation = participantSchema.validate(user);
     if(validation.error){

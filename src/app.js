@@ -7,6 +7,7 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
+import { login }  from './api/participante.js'
 
 
 let db = null;
@@ -21,34 +22,7 @@ server.use(json());
 
 /* Participants Routes */
 
-server.post("/participants", async (req, res) => {
-    if(!participantValidation(user)){return res.sendStatus(422);};
-    try{
-        const user = req.body;
-        const participantCollection = db.collection('participante');
-
-        const participant = await participantCollection.findOne({name: user});
-
-        if(participant){return res.sendStatus(409);};
-
-        await participantCollection.insertOne({
-            name: user,
-            laststatus: DateNow()
-        });
-
-        await db.collection('mensagem').insertOne({
-            from: user,
-            to: 'Todos',
-            text: 'entra na sala...',
-            type: 'status',
-            time: dayjs().format('HH:mm:ss')
-        })
-
-        res.sendStatus(201);
-    } catch(error){
-        res.send(500);
-    } 
-});
+server.post("/participants", async (req, res) => login(req,res));
 server.get("/participants", (req, res) => {
     db.collection('participante').find().toArray().then(participants => {
         res.send(participants)
@@ -96,7 +70,26 @@ server.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     }
 });
 server.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
-
+        const { user }  = req.headers;
+        const message = req.body;
+        if(messagesValidation(message)){return res.sendStatus(422);};
+        message.time = dayjs().format('HH:mm:ss')
+        db.collection('mensagens').insertOne(message);
+    try{
+        const { ID_DA_MENSAGEM } = req.params;
+        const messageCollection = db.collection('mensagens')
+        const message = messageCollection.findOne({ _id: new Object(ID_DA_MENSAGEM)});
+        if(!message){
+            return res.sendStatus(404);
+        };
+        if(message.name !== user){
+            return res.sendStatus(401);
+        }
+        await messageCollection.deleteOne({ _id: new Object(ID_DA_MENSAGEM)});
+        res.sendStatus(200)
+    } catch (error){
+        res.sendStatus(500);
+    }
 });
 
 /* Status Routes */
