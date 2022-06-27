@@ -28,7 +28,18 @@ async function login(req,res){
     } catch (error){
         return res.send(422);
     } 
+
 }
 
-export { login }
+async function allOnlineUsers(req,res){
+    await mongoClient.connect();
+    const db = mongoClient.db('uol');
+
+    const participantCollection = db.collection('participante');
+    const participants = participantCollection.find().toArray()
+
+    return res.send(participants)
+}
+
+export { login, allOnlineUsers }
 

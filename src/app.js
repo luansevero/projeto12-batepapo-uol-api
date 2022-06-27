@@ -7,7 +7,7 @@ dotenv.config();
 
 import {MongoClient} from 'mongodb';
 import { participantValidation, messagesValidation } from './components/JoiVerifications.js'
-import { login }  from './api/participante.js'
+import { login, allOnlineUsers }  from './api/participante.js'
 
 
 let db = null;
@@ -23,11 +23,7 @@ server.use(json());
 /* Participants Routes */
 
 server.post("/participants", async (req, res) => login(req,res));
-server.get("/participants", (req, res) => {
-    db.collection('participante').find().toArray().then(participants => {
-        res.send(participants)
-    })
-});
+server.get("/participants", (req, res) => allOnlineUsers(req,res));
 
 /* Messages Routes */
 
