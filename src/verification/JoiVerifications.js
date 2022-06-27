@@ -14,14 +14,16 @@ function participantValidation(user){
 
 //Messages validation
 function messagesValidation(message){
+    const msg = {...message}
+    msg.from = String(Boolean(msg.from))
     const messageSchema = joi.object({
         to: joi.string().required(),
         text: joi.string().required(),
         type: joi.string().valid('message', 'private_message').required(),
-        from: joi.boolean().default(true).required(),
+        from: joi.string().valid('true').required(),
         time: joi.string().min(1).trim().required()
     });
-    const validation = messageSchema.validate(message);
+    const validation = messageSchema.validate(msg);
     if(validation.error){
         return false
     };  return true
